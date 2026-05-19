@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logsense-ai-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logsense-ai-backend
+  template:
+    metadata:
+      labels:
+        app: logsense-ai-backend
+      annotations:
+        rollme: "1"
+    spec:
+      containers:
+        - name: backend
+          image: logsense-ai-backend:1.0.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: TZ
+              value: Europe/Oslo
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Duser.timezone=Europe/Oslo"
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: DB_PASSWORD
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: JWT_SECRET
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: GOOGLE_CLIENT_ID
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: GOOGLE_CLIENT_SECRET
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logsense-ai-backend-service
+spec:
+  selector:
+    app: logsense-ai-backend
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP

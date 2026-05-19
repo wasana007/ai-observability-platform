@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payroll-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payroll-backend
+  template:
+    metadata:
+      labels:
+        app: payroll-backend
+      annotations:
+        rollme: "1"
+    spec:
+      containers:
+        - name: backend
+          image: payroll-backend:1.0.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8282
+          env:
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: payroll-secrets
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: payroll-secrets
+                  key: DB_PASSWORD
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payroll-backend-service
+spec:
+  selector:
+    app: payroll-backend
+  ports:
+    - port: 8282
+      targetPort: 8282
+  type: ClusterIP
