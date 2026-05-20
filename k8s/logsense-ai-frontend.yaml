@@ -17,7 +17,7 @@ spec:
       containers:
         - name: frontend
           image: logsense-ai-frontend:1.0.0
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
 ---

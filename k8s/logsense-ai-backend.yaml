@@ -17,10 +17,12 @@ spec:
       containers:
         - name: backend
           image: logsense-ai-backend:1.0.0
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: k8s
             - name: TZ
               value: Europe/Oslo
             - name: JAVA_TOOL_OPTIONS

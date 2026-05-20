@@ -17,10 +17,16 @@ spec:
       containers:
         - name: backend
           image: payroll-backend:1.0.0
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8282
           env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: k8s
+            - name: TZ
+              value: Europe/Oslo
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Duser.timezone=Europe/Oslo"
             - name: DB_USERNAME
               valueFrom:
                 secretKeyRef:

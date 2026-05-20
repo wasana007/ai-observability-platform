@@ -40,7 +40,7 @@ Systemet bruker Kafka som sentral meldingsbroker mellom tjenester og AI-analyse.
 
 # Arkitektur
 
-```text id="queb0n"
+```text
 Browser
         │
         ├── LogSenseAI Frontend (3000)
@@ -81,7 +81,7 @@ Browser
 
 # Prosjektstruktur
 
-```text id="vjlwmk"
+```text
 D:\ai-observability-platform\
 │
 ├── run-all.bat
@@ -231,6 +231,14 @@ DB_USERNAME=${DB_USERNAME}
 DB_PASSWORD=${DB_PASSWORD}
 ```
 
+Aktiver profil i IntelliJ:
+
+```
+Run Configuration → Environment variables → SPRING_PROFILES_ACTIVE=local
+```
+
+> `application-local.yml` skal ikke committes til Git (ligger i `.gitignore`)
+
 ---
 
 # Oppstart
@@ -249,6 +257,7 @@ Scriptet:
 * deployer LogSenseAI
 * deployer Payroll-systemet
 * deployer Ollama
+* laster ned llama3.2 hvis den mangler
 * oppretter port-forwarding
 
 ---
@@ -320,9 +329,10 @@ k8s/ollama-service.yaml
 
 ## Backend konfigurasjon
 
-```properties
-ollama.base-url=http://ollama:11434
-ollama.model=llama3.2
+```yaml
+ollama:
+  base-url: http://ollama:11434
+  model: llama3.2
 ```
 
 ---
@@ -331,8 +341,10 @@ ollama.model=llama3.2
 
 Alle backend-tjenester bruker:
 
-```properties
-spring.kafka.bootstrap-servers=kafka-service:9092
+```yaml
+spring:
+  kafka:
+    bootstrap-servers: kafka-service:9092
 ```
 
 ---
@@ -341,14 +353,18 @@ spring.kafka.bootstrap-servers=kafka-service:9092
 
 ## PostgreSQL
 
-```properties
-spring.datasource.url=jdbc:postgresql://postgres-service:5432/logdb
+```yaml
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres-service:5432/logdb
 ```
 
 ## MySQL
 
-```properties
-spring.datasource.url=jdbc:mysql://mysql-service:3306/payrolldb
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://mysql-service:3306/payrolldb
 ```
 
 ---
@@ -399,12 +415,9 @@ Running
 * [x] React frontend
 * [x] AI-basert logganalyse
 * [x] Realtime observability
-* [ ] Distributed tracing
 * [ ] Metrics dashboard
 * [ ] Dead Letter Queue
 * [ ] Retry mekanisme
-* [ ] OAuth2 / JWT
-* [ ] Helm charts
 * [ ] CI/CD pipeline
 
 ---

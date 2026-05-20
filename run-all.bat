@@ -118,6 +118,22 @@ kubectl wait --for=condition=Ready pod -l app=payroll-backend      --timeout=180
 kubectl wait --for=condition=Ready pod -l app=payroll-frontend     --timeout=180s
 
 REM -----------------------------
+REM OLLAMA MODEL
+REM -----------------------------
+echo.
+echo Checking Ollama model...
+kubectl wait --for=condition=Ready pod -l app=ollama --timeout=120s
+
+kubectl exec deployment/ollama -- ollama list | findstr "llama3.2" > nul
+if errorlevel 1 (
+    echo Pulling llama3.2 - this may take a while...
+    kubectl exec deployment/ollama -- ollama pull llama3.2
+    echo [OK] llama3.2 ready.
+) else (
+    echo [OK] llama3.2 already exists, skipping pull.
+)
+
+REM -----------------------------
 REM STATUS
 REM -----------------------------
 echo.
