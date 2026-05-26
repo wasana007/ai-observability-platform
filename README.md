@@ -1,6 +1,6 @@
 # AI Observability Platform
 
-Lokal utviklingsplattform for LogSenseAI og Payroll-systemet, bygget med Kubernetes, Java, Spring Boot, Kafka, React, PostgreSQL, MySQL og Ollama LLM.
+Lokal utviklingsplattform for LogSenseAI og Payroll-systemet, bygget med Kubernetes, Java, Spring Boot, Kafka, React, PostgreSQL, MySQL, Elasticsearch og Ollama LLM.
 
 Plattformen gir et komplett miljø for:
 
@@ -18,7 +18,7 @@ Plattformen gir et komplett miljø for:
 ### 🎬 AI Observability Platform - Klikk på bildet nedenfor for å se hele demoen på YouTube ▶️
 
 [![Watch Demo](docs/images/ai.jpg)](https://www.youtube.com/watch?v=lvd7c52SFAo&list=PLOwWtF7kBLb9jhErLeylQOukc290gTNdD&index=1)
-Disclaimer: Stemmen i videoen er generert med AI-basert tekst-til-tale-teknologi.
+NB! Stemmen i videoen er generert med AI-basert tekst-til-tale-teknologi.
 
 # Oversikt
 
@@ -33,6 +33,7 @@ Plattformen kjører flere tjenester lokalt i Kubernetes og kobler sammen:
 * PostgreSQL
 * MySQL
 * Ollama (Llama3.2)
+* Elasticsearch
 
 Systemet bruker Kafka som sentral meldingsbroker mellom tjenester og AI-analyse.
 
@@ -50,6 +51,7 @@ Browser
         │           │
         │           ├── Kafka
         │           ├── PostgreSQL
+        │           ├── Elasticsearch
         │           └── Ollama LLM
         │
         └── Payroll Frontend (3001)
@@ -72,6 +74,7 @@ Browser
 | Frontend          | React                   |
 | Meldingssystem    | Apache Kafka            |
 | Databaser         | PostgreSQL + MySQL      |
+| Søk               | Elasticsearch 8         |
 | AI                | Ollama (Llama3.2)       |
 | Container Runtime | Docker Desktop          |
 | Orkestrering      | Kubernetes              |
@@ -99,6 +102,8 @@ D:\ai-observability-platform\
     ├── mysql.yaml
     ├── kafka.yaml
     ├── zookeeper.yaml
+    ├── elasticsearch.yaml
+    ├── kibana.yaml
     ├── ollama.yaml
     ├── ollama-deployment.yaml
     └── ollama-service.yaml
@@ -126,17 +131,19 @@ D:\reactproject\
 
 # Kubernetes Komponenter
 
-| Komponent            | Beskrivelse         |
-| -------------------- |---------------------|
-| logsense-ai-backend  | LogsenseAI API      |
-| logsense-ai-frontend | LogsenseAI UI       |
-| payroll-backend      | Payroll API         |
-| payroll-frontend     | Payroll UI          |
-| kafka                | Event broker        |
-| zookeeper            | Kafka koordinering  |
-| postgres             | LogSenseAI database |
-| mysql                | Payroll database    |
-| ollama               | Lokal LLM service   |
+| Komponent            | Beskrivelse             |
+| -------------------- |-------------------------|
+| logsense-ai-backend  | LogsenseAI API          |
+| logsense-ai-frontend | LogsenseAI UI           |
+| payroll-backend      | Payroll API             |
+| payroll-frontend     | Payroll UI              |
+| kafka                | Event broker            |
+| zookeeper            | Kafka koordinering      |
+| postgres             | LogSenseAI database     |
+| mysql                | Payroll database        |
+| elasticsearch        | Loggsøk                 |
+| kibana               | Elasticsearch dashboard |
+| ollama               | Lokal LLM service       |
 
 ---
 
@@ -148,29 +155,33 @@ D:\reactproject\
 | LogSenseAI Backend  | [http://localhost:8080](http://localhost:8080)   |
 | Payroll Frontend    | [http://localhost:3001](http://localhost:3001)   |
 | Payroll Backend     | [http://localhost:8282](http://localhost:8282)   |
+| Kibana              | [http://localhost:5601](http://localhost:5601)   |
 | Ollama API          | [http://localhost:11434](http://localhost:11434) |
 
 ---
 
 # Kubernetes Services
 
-| Service          | Port  |
-| ---------------- | ----- |
-| kafka-service    | 9092  |
-| postgres-service | 5432  |
-| mysql-service    | 3306  |
-| ollama           | 11434 |
+| Service                 | Port  |
+| ----------------------- | ----- |
+| kafka-service           | 9092  |
+| postgres-service        | 5432  |
+| mysql-service           | 3306  |
+| elasticsearch-service   | 9200  |
+| kibana-service          | 5601  |
+| ollama                  | 11434 |
 
 ---
 
 # Intern kommunikasjon
 
-| System     | Adresse                 |
-| ---------- | ----------------------- |
-| Kafka      | `kafka-service:9092`    |
-| PostgreSQL | `postgres-service:5432` |
-| MySQL      | `mysql-service:3306`    |
-| Ollama     | `http://ollama:11434`   |
+| System        | Adresse                          |
+| ------------- | -------------------------------- |
+| Kafka         | `kafka-service:9092`             |
+| PostgreSQL    | `postgres-service:5432`          |
+| MySQL         | `mysql-service:3306`             |
+| Elasticsearch | `elasticsearch-service:9200`     |
+| Ollama        | `http://ollama:11434`            |
 
 ---
 

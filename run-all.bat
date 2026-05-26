@@ -41,6 +41,30 @@ if errorlevel 1 goto error
 timeout /t 10 >nul
 
 REM -----------------------------
+REM PULL ELASTIC IMAGES
+REM -----------------------------
+echo.
+echo Checking Elasticsearch image...
+docker image inspect docker.elastic.co/elasticsearch/elasticsearch:8.12.0 >nul 2>&1
+if errorlevel 1 (
+    echo Pulling Elasticsearch image - this may take a while...
+    docker pull docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    echo [OK] Elasticsearch image ready.
+) else (
+    echo [OK] Elasticsearch image already exists, skipping pull.
+)
+
+echo Checking Kibana image...
+docker image inspect docker.elastic.co/kibana/kibana:8.12.0 >nul 2>&1
+if errorlevel 1 (
+    echo Pulling Kibana image - this may take a while...
+    docker pull docker.elastic.co/kibana/kibana:8.12.0
+    echo [OK] Kibana image ready.
+) else (
+    echo [OK] Kibana image already exists, skipping pull.
+)
+
+REM -----------------------------
 REM BUILD IMAGES
 REM -----------------------------
 echo.
@@ -157,11 +181,15 @@ call :free_port 3000
 call :free_port 8080
 call :free_port 3001
 call :free_port 8282
+call :free_port 9200
+call :free_port 5601
 
-start "LogSense UI"  cmd /k kubectl port-forward service/logsense-ai-frontend-service 3000:80
-start "LogSense API" cmd /k kubectl port-forward service/logsense-ai-backend-service  8080:8080
-start "Payroll UI"   cmd /k kubectl port-forward service/payroll-frontend-service      3001:80
-start "Payroll API"  cmd /k kubectl port-forward service/payroll-backend-service       8282:8282
+start "LogSense UI"     cmd /k kubectl port-forward service/logsense-ai-frontend-service 3000:80
+start "LogSense API"    cmd /k kubectl port-forward service/logsense-ai-backend-service  8080:8080
+start "Payroll UI"      cmd /k kubectl port-forward service/payroll-frontend-service      3001:80
+start "Payroll API"     cmd /k kubectl port-forward service/payroll-backend-service       8282:8282
+start "Elasticsearch"   cmd /k kubectl port-forward service/elasticsearch-service         9200:9200
+start "Kibana"          cmd /k kubectl port-forward service/kibana-service                5601:5601
 
 timeout /t 3 /nobreak >nul
 
@@ -173,6 +201,8 @@ echo  LogSense UI   ^>^>  http://localhost:3000
 echo  LogSense API  ^>^>  http://localhost:8080
 echo  Payroll UI    ^>^>  http://localhost:3001
 echo  Payroll API   ^>^>  http://localhost:8282
+echo  Elasticsearch ^>^>  http://localhost:9200
+echo  Kibana        ^>^>  http://localhost:5601
 echo =========================================
 pause
 exit /b 0
