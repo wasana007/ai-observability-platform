@@ -11,12 +11,15 @@ REM CONFIGURATION
 REM -----------------------------
 set LOGSENSE_BACKEND_DIR=D:\javaworkspace\logsense-ai-backend
 set LOGSENSE_FRONTEND_DIR=D:\reactproject\logsense-ai-frontend
+set LOGSENSE_ADMIN_DIR=D:\reactproject\logsense-admin
 set PAYROLL_BACKEND_DIR=D:\javaworkspace\payroll-backend
 set PAYROLL_FRONTEND_DIR=D:\reactproject\payroll-frontend
+
 set K8S_DIR=D:\ai-observability-platform\k8s
 
 set LOGSENSE_BACKEND_IMAGE=logsense-ai-backend:1.0.0
 set LOGSENSE_FRONTEND_IMAGE=logsense-ai-frontend:1.0.0
+set LOGSENSE_ADMIN_IMAGE=logsense-admin:1.0.0
 set PAYROLL_BACKEND_IMAGE=payroll-backend:1.0.0
 set PAYROLL_FRONTEND_IMAGE=payroll-frontend:1.0.0
 
@@ -26,6 +29,7 @@ REM -----------------------------
 echo Validating...
 if not exist "%LOGSENSE_BACKEND_DIR%" ( echo [ERROR] %LOGSENSE_BACKEND_DIR% not found & goto error )
 if not exist "%LOGSENSE_FRONTEND_DIR%" ( echo [ERROR] %LOGSENSE_FRONTEND_DIR% not found & goto error )
+if not exist "%LOGSENSE_ADMIN_DIR%" ( echo [ERROR] %LOGSENSE_ADMIN_DIR% not found & goto error )
 if not exist "%PAYROLL_BACKEND_DIR%" ( echo [ERROR] %PAYROLL_BACKEND_DIR% not found & goto error )
 if not exist "%PAYROLL_FRONTEND_DIR%" ( echo [ERROR] %PAYROLL_FRONTEND_DIR% not found & goto error )
 if not exist "%K8S_DIR%" ( echo [ERROR] %K8S_DIR% not found & goto error )
@@ -86,6 +90,13 @@ if !errorlevel! neq 0 ( popd & echo [ERROR] logsense-ai-frontend failed. & goto 
 popd
 echo [OK] logsense-ai-frontend done.
 
+echo Building logsense-admin...
+pushd "%LOGSENSE_ADMIN_DIR%"
+docker build --no-cache -t %LOGSENSE_ADMIN_IMAGE% .
+if !errorlevel! neq 0 ( popd & echo [ERROR] logsense-admin failed. & goto error )
+popd
+echo [OK] logsense-admin done.
+
 echo Building payroll-backend...
 pushd "%PAYROLL_BACKEND_DIR%"
 docker build --no-cache -t %PAYROLL_BACKEND_IMAGE% --secret id=maven_settings,src=C:\Users\%USERNAME%\.m2\settings.xml .
@@ -128,6 +139,7 @@ echo.
 echo Forcing pod restart with new images...
 kubectl patch deployment logsense-ai-backend  -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"rollme\":\"%TIME%\"}}}}}"
 kubectl patch deployment logsense-ai-frontend -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"rollme\":\"%TIME%\"}}}}}"
+kubectl patch deployment logsense-admin       -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"rollme\":\"%TIME%\"}}}}}"
 kubectl patch deployment payroll-backend       -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"rollme\":\"%TIME%\"}}}}}"
 kubectl patch deployment payroll-frontend      -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"rollme\":\"%TIME%\"}}}}}"
 
@@ -138,6 +150,7 @@ echo.
 echo Waiting pods...
 kubectl wait --for=condition=Ready pod -l app=logsense-ai-backend  --timeout=180s
 kubectl wait --for=condition=Ready pod -l app=logsense-ai-frontend --timeout=180s
+kubectl wait --for=condition=Ready pod -l app=logsense-admin       --timeout=180s
 kubectl wait --for=condition=Ready pod -l app=payroll-backend      --timeout=180s
 kubectl wait --for=condition=Ready pod -l app=payroll-frontend     --timeout=180s
 
@@ -178,18 +191,20 @@ REM -----------------------------
 echo.
 echo Starting port-forward...
 call :free_port 3000
+call :free_port 5173
 call :free_port 8080
 call :free_port 3001
 call :free_port 8282
 call :free_port 9200
 call :free_port 5601
 
-start "LogSense UI"     cmd /k kubectl port-forward service/logsense-ai-frontend-service 3000:80
-start "LogSense API"    cmd /k kubectl port-forward service/logsense-ai-backend-service  8080:8080
-start "Payroll UI"      cmd /k kubectl port-forward service/payroll-frontend-service      3001:80
-start "Payroll API"     cmd /k kubectl port-forward service/payroll-backend-service       8282:8282
-start "Elasticsearch"   cmd /k kubectl port-forward service/elasticsearch-service         9200:9200
-start "Kibana"          cmd /k kubectl port-forward service/kibana-service                5601:5601
+start "LogSense UI"         cmd /k kubectl port-forward service/logsense-ai-frontend-service  3000:80
+start "LogSense Admin UI"   cmd /k kubectl port-forward service/logsense-admin-service        5173:80
+start "LogSense API"        cmd /k kubectl port-forward service/logsense-ai-backend-service   8080:8080
+start "Payroll UI"          cmd /k kubectl port-forward service/payroll-frontend-service      3001:80
+start "Payroll API"         cmd /k kubectl port-forward service/payroll-backend-service       8282:8282
+start "Elasticsearch"       cmd /k kubectl port-forward service/elasticsearch-service         9200:9200
+start "Kibana"              cmd /k kubectl port-forward service/kibana-service                5601:5601
 
 timeout /t 3 /nobreak >nul
 
@@ -197,12 +212,13 @@ echo.
 echo =========================================
 echo  SYSTEM READY
 echo =========================================
-echo  LogSense UI   ^>^>  http://localhost:3000
-echo  LogSense API  ^>^>  http://localhost:8080
-echo  Payroll UI    ^>^>  http://localhost:3001
-echo  Payroll API   ^>^>  http://localhost:8282
-echo  Elasticsearch ^>^>  http://localhost:9200
-echo  Kibana        ^>^>  http://localhost:5601
+echo  LogSense UI         ^>^>  http://localhost:3000
+echo  LogSense Admin UI   ^>^>  http://localhost:5173
+echo  LogSense API        ^>^>  http://localhost:8080
+echo  Payroll UI          ^>^>  http://localhost:3001
+echo  Payroll API         ^>^>  http://localhost:8282
+echo  Elasticsearch       ^>^>  http://localhost:9200
+echo  Kibana              ^>^>  http://localhost:5601
 echo =========================================
 pause
 exit /b 0

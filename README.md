@@ -26,6 +26,7 @@ Plattformen kjører flere tjenester lokalt i Kubernetes og kobler sammen:
 
 * LogSenseAI Backend
 * LogSenseAI Frontend
+* LogSense Admin
 * Payroll Backend
 * Payroll Frontend
 * Kafka
@@ -54,14 +55,12 @@ Browser
         │           ├── Elasticsearch
         │           └── Ollama LLM
         │
+        ├── LogSense Admin (5173)
+        │           │
+        │           ▼
+        │    LogSenseAI Backend (8080)
+        │
         └── Payroll Frontend (3001)
-                    │
-                    ▼
-             Payroll Backend (8282)
-                    │
-                    ├── Kafka
-                    ├── MySQL
-                    └── LogSenseAI
 ```
 
 ---
@@ -96,6 +95,7 @@ D:\ai-observability-platform\
 └── k8s\
     ├── logsense-ai-backend.yaml
     ├── logsense-ai-frontend.yaml
+    ├── logsense-admin.yaml
     ├── payroll-backend.yaml
     ├── payroll-frontend.yaml
     ├── postgres.yaml
@@ -123,6 +123,9 @@ D:\reactproject\
 ├── logsense-ai-frontend\        # React frontend
 │   └── Dockerfile
 │
+├── logsense-admin\              # React Router v7 admin panel
+│   └── Dockerfile
+│
 └── payroll-frontend\            # React frontend
     └── Dockerfile
 ```
@@ -135,6 +138,7 @@ D:\reactproject\
 | -------------------- |-------------------------|
 | logsense-ai-backend  | LogsenseAI API          |
 | logsense-ai-frontend | LogsenseAI UI           |
+| logsense-admin       | LogSense Admin UI       |
 | payroll-backend      | Payroll API             |
 | payroll-frontend     | Payroll UI              |
 | kafka                | Event broker            |
@@ -152,6 +156,7 @@ D:\reactproject\
 | Tjeneste            | URL                                              |
 | ------------------- | ------------------------------------------------ |
 | LogSenseAI Frontend | [http://localhost:3000](http://localhost:3000)   |
+| LogSense Admin      | [http://localhost:5173](http://localhost:5173)   |
 | LogSenseAI Backend  | [http://localhost:8080](http://localhost:8080)   |
 | Payroll Frontend    | [http://localhost:3001](http://localhost:3001)   |
 | Payroll Backend     | [http://localhost:8282](http://localhost:8282)   |

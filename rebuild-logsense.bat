@@ -13,13 +13,22 @@ docker build --no-cache -t logsense-ai-frontend:1.0.0 .
 if %errorlevel% neq 0 ( popd & echo [ERROR] Frontend build failed. & pause & exit /b 1 )
 popd
 
+pushd D:\reactproject\logsense-admin
+docker build --no-cache -t logsense-admin:1.0.0 .
+if %errorlevel% neq 0 ( popd & echo [ERROR] Frontend build failed. & pause & exit /b 1 )
+popd
+
 echo Forcing pod restart...
 kubectl patch deployment logsense-ai-backend  -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"rollme\":\"%TIME%\"}}}}}"
 kubectl patch deployment logsense-ai-frontend -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"rollme\":\"%TIME%\"}}}}}"
+kubectl patch deployment logsense-admin       -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"rollme\":\"%TIME%\"}}}}}"
 
 kubectl rollout status deployment/logsense-ai-backend  --timeout=120s
 kubectl rollout status deployment/logsense-ai-frontend --timeout=120s
+kubectl rollout status deployment/logsense-admin       --timeout=120s
 
 kubectl get pods -l app=logsense-ai-backend
 kubectl get pods -l app=logsense-ai-frontend
+kubectl get pods -l app=logsense-admin
+
 pause

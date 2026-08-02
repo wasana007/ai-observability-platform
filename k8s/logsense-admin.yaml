@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logsense-admin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logsense-admin
+  template:
+    metadata:
+      labels:
+        app: logsense-admin
+      annotations:
+        rollme: "1"
+    spec:
+      containers:
+        - name: frontend
+          image: logsense-admin:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5173
+          env:
+            - name: PORT
+              value: "5173"
+            - name: API_BASE_URL
+              value: "http://logsense-ai-backend-service:8080"
+            - name: NODE_ENV
+              value: "production"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logsense-admin-service
+spec:
+  selector:
+    app: logsense-admin
+  ports:
+    - port: 80
+      targetPort: 5173
+  type: ClusterIP
